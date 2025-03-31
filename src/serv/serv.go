@@ -15,7 +15,7 @@ import (
 )
 
 type Service struct {
-	mux                   *http.ServeMux
+	// mux                   *http.ServeMux
 	port                  string
 	dleApiURL             string
 	dleBasicLogin         string
@@ -51,11 +51,11 @@ func (s *Service) Run() {
 			for _, link := range links {
 				msg = msg + link + "\n"
 			}
-			s.telegramService.Send(s.telegramReportGroupID, fmt.Sprintf("dmca block (%d):\n%s", len(links), msg))
-			s.sendLinks(links)
+			s.telegramService.Send(s.telegramReportGroupID, fmt.Sprintf("DMCA incoming email (%d):\n%s", len(links), msg))
+			_ = s.sendLinks(links)
 		} else {
 			log.Println("no links body:", body)
-			s.telegramService.Send(s.telegramReportGroupID, "dmca got mail with no links")
+			s.telegramService.Send(s.telegramReportGroupID, "DMCA email without links")
 		}
 
 		// send to dle to change links
@@ -72,29 +72,31 @@ func (s *Service) Run() {
 	}
 }
 
-func (s *Service) sendLinks(links []string) {
+func (s *Service) sendLinks(links []string) (err error) {
 
 	client := &http.Client{}
 	v := url.Values{}
 	for _, link := range links {
 		v.Add("links[]", link)
 	}
-	req, err := http.NewRequest("POST", s.dleApiURL, strings.NewReader(v.Encode()))
+	req, _ := http.NewRequest("POST", s.dleApiURL, strings.NewReader(v.Encode()))
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	req.SetBasicAuth(s.dleBasicLogin, s.dleBasicPassword)
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
+		return err
 	}
 
 	defer resp.Body.Close()
-	body, err := io.ReadAll(resp.Body)
+	body, _ := io.ReadAll(resp.Body)
 	log.Printf("RESPONCE:%s\n", body)
-	s.telegramService.Send(s.telegramReportGroupID, fmt.Sprintf("DLE:\n%s", body))
+	s.telegramService.Send(s.telegramReportGroupID, fmt.Sprintf("DMCA DLE RESPONCE:\n%s", body))
+	return nil
 }
 
 func (s *Service) parseLinks(text string) (res []string) {
-	r := regexp.MustCompile(`(?m:^https.*\/)`)
+	r := regexp.MustCompile(`(?m:^https.*\.html)`)
 	res = r.FindAllString(text, -1)
 	return
 }
