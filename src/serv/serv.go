@@ -6,7 +6,6 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"net/url"
 	"os"
 	"regexp"
 	"strings"
@@ -75,11 +74,14 @@ func (s *Service) Run() {
 func (s *Service) sendLinks(links []string) (err error) {
 
 	client := &http.Client{}
-	v := url.Values{}
-	for _, link := range links {
-		v.Add("links[]", link)
-	}
-	req, _ := http.NewRequest("POST", s.dleApiURL, strings.NewReader(v.Encode()))
+	// v := url.Values{}
+	// for _, link := range links {
+	// 	v.Add("links[]", link)
+	// }
+
+	linksStr := strings.Join(links, "\n")
+
+	req, _ := http.NewRequest("POST", s.dleApiURL, strings.NewReader(linksStr))
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	req.SetBasicAuth(s.dleBasicLogin, s.dleBasicPassword)
 	resp, err := client.Do(req)
