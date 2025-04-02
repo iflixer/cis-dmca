@@ -3,8 +3,9 @@ package telegram
 import (
 	"errors"
 	"fmt"
-	"github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"log"
+
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
 type Service struct {
@@ -14,8 +15,8 @@ type Service struct {
 
 func (s *Service) Send(ch int64, message string) {
 	msg := tgbotapi.NewMessage(ch, message)
-	msg.ParseMode = tgbotapi.ModeHTML
-	msg.DisableWebPagePreview = true
+	//msg.ParseMode = tgbotapi.ModeHTML
+	//msg.DisableWebPagePreview = true
 	if _, err := s.api.Send(msg); err != nil {
 		log.Println("telegram send message error:", err)
 	}
