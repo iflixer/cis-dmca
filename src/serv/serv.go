@@ -45,16 +45,23 @@ func (s *Service) Run() {
 
 		log.Println("links:", links)
 
+		answer := ""
+		dleError := error(nil)
 		if len(links) > 0 {
 			msg := ""
 			for _, link := range links {
 				msg = msg + link + "\n"
 			}
-			s.telegramService.Send(s.telegramReportGroupID, fmt.Sprintf("DMCA incoming email (%d):\n%s", len(links), msg))
-			_ = s.sendLinks(links)
+			answer, dleError = s.sendLinks(links)
 		} else {
 			log.Println("no links body:", body)
-			s.telegramService.Send(s.telegramReportGroupID, "DMCA email without links")
+			answer = "no links in email"
+		}
+
+		if dleError != nil {
+			s.telegramService.Send(s.telegramReportGroupID, fmt.Sprintf("DMCA complain!\nDLE answer:%s", answer))
+		} else {
+			s.telegramService.Send(s.telegramReportGroupID, fmt.Sprintf("DMCA complain!\nError sending to DLE:%s", dleError))
 		}
 
 		// send to dle to change links
@@ -71,7 +78,7 @@ func (s *Service) Run() {
 	}
 }
 
-func (s *Service) sendLinks(links []string) (err error) {
+func (s *Service) sendLinks(links []string) (answer string, err error) {
 
 	client := &http.Client{}
 	// v := url.Values{}
@@ -87,14 +94,14 @@ func (s *Service) sendLinks(links []string) (err error) {
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Println(err)
-		return err
+		return "", err
 	}
 
 	defer resp.Body.Close()
 	body, _ := io.ReadAll(resp.Body)
 	log.Printf("RESPONCE:%s\n", body)
 	s.telegramService.Send(s.telegramReportGroupID, fmt.Sprintf("DMCA DLE RESPONCE:\n%s", body))
-	return nil
+	return "", nil
 }
 
 func (s *Service) parseLinks(text string) (res []string) {
