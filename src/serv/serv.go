@@ -100,8 +100,8 @@ func (s *Service) sendLinks(links []string) (answer string, err error) {
 	defer resp.Body.Close()
 	body, _ := io.ReadAll(resp.Body)
 	log.Printf("RESPONCE:%s\n", body)
-	s.telegramService.Send(s.telegramReportGroupID, fmt.Sprintf("DMCA DLE RESPONCE:\n%s", body))
-	return "", nil
+	// s.telegramService.Send(s.telegramReportGroupID, fmt.Sprintf("DMCA DLE RESPONCE:\n%s", body))
+	return string(body), nil
 }
 
 func (s *Service) parseLinks(text string) (res []string) {
