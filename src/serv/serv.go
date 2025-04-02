@@ -58,7 +58,7 @@ func (s *Service) Run() {
 			answer = "no links in email"
 		}
 
-		if dleError != nil {
+		if dleError == nil {
 			s.telegramService.Send(s.telegramReportGroupID, fmt.Sprintf("DMCA complain!\nDLE answer:%s", answer))
 		} else {
 			s.telegramService.Send(s.telegramReportGroupID, fmt.Sprintf("DMCA complain!\nError sending to DLE:%s", dleError))

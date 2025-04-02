@@ -16,7 +16,7 @@ type Service struct {
 func (s *Service) Send(ch int64, message string) {
 	msg := tgbotapi.NewMessage(ch, message)
 	//msg.ParseMode = tgbotapi.ModeHTML
-	//msg.DisableWebPagePreview = true
+	msg.DisableWebPagePreview = true
 	if _, err := s.api.Send(msg); err != nil {
 		log.Println("telegram send message error:", err)
 	}
